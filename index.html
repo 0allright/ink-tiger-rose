@@ -75,6 +75,9 @@
   #seal.on{transition:all .32s cubic-bezier(.2,2.2,.4,1);transform:rotate(-8deg) scale(1);opacity:.92}
   #back{position:absolute;right:18px;top:12px;font:12px -apple-system,sans-serif;
     color:#8a8272;cursor:pointer;letter-spacing:.15em}
+  #openBtn.beckon{animation:beckon 1.5s ease-in-out infinite;border-color:#E8B84B}
+  @keyframes beckon{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(232,184,75,0)}
+    50%{transform:translateY(-7px);box-shadow:0 0 20px 5px rgba(232,184,75,.5)}}
 </style>
 </head>
 <body>
@@ -83,7 +86,7 @@
 <div class="moon"></div>
 <canvas id="stage"></canvas>
 <div id="poem">心有猛虎，细嗅蔷薇<span class="cr">萨松诗 · 余光中译</span></div>
-<div id="hint">按住拖动 · 转到侧面有话对你说</div>
+<div id="hint">按住拖动 · 正面有虎，侧面有话</div>
 <button id="openBtn">拆 信</button>
 <div id="card">
   <div class="paper" id="paper">
@@ -161,6 +164,21 @@ var GOLD=[hueSprite(43,0.95,40),hueSprite(45,0.95,52),hueSprite(47,0.95,66)];
 var GOLDD=hueSprite(41,0.9,24);
 /* 蔷薇三层 sprite：花心深玫红 → 内圈 → 外圈浅粉（取色自真实蔷薇照片） */
 var ROSEP=[hueSprite(349,0.95,34),hueSprite(347,0.95,46),hueSprite(344,0.95,58)];
+/* ====== 清字层：鎏金实体字预渲染（非光粒组字） ====== */
+var TXT_CV=document.createElement('canvas');TXT_CV.width=1760;TXT_CV.height=1120;
+(function(){var g=TXT_CV.getContext('2d');
+  g.textAlign='center';g.textBaseline='middle';
+  function gold(x,y,size,txt){
+    g.save();g.font='bold '+size+'px "Yuanti SC","幼圆","YouYuan","PingFang SC","Microsoft YaHei",sans-serif';
+    g.shadowColor='rgba(110,74,16,0.6)';g.shadowBlur=8;g.shadowOffsetX=5;g.shadowOffsetY=7;
+    var gr=g.createLinearGradient(0,y-size*0.55,0,y+size*0.55);
+    gr.addColorStop(0,'#F8E3A0');gr.addColorStop(0.42,'#EDBD52');gr.addColorStop(0.78,'#C8952C');gr.addColorStop(1,'#A97B1E');
+    g.fillStyle=gr;g.fillText(txt,x,y);g.restore();}
+  gold(880,140,112,'亲 爱 的 德 昌 ：');
+  gold(880,452,300,'生 日 快 乐');
+  gold(880,764,190,'天 天 开 心');
+  gold(880,972,112,'—— 阿 腾');
+})();
 
 /* ====== 采样 ====== */
 var TDY=0;   /* 文字上浮量(世界单位)，assemble 内计算 */
@@ -187,7 +205,7 @@ function sampleTiger(img,cimg){
       var edge=(Math.abs(xl-xr)+Math.abs(yu-yd2))>0.55 && a>0.18;
       var cx2=Math.min(cc.width-1,x/W*cc.width|0),cy2=Math.min(cc.height-1,y/H*cc.height|0);
       var j=(cy2*cc.width+cx2)*4;
-      var wgt=(edge?110:40)+a*a*130;
+      var wgt=(edge?200:40)+a*a*130;
       if(!edge&&x/W>0.57&&y/H>0.68)wgt*=1.8;   /* 虎首加密（嗅的焦点） */
       var R=cd[j],G2=cd[j+1],B=cd[j+2];
       if(edge){R*=0.2;G2*=0.2;B*=0.2;}       /* 轮廓带：原色压暗成勾线 */
@@ -265,7 +283,7 @@ var PTS=[];
 function assemble(){
   BOX_W=BOX_H*TIGER_IMG.naturalWidth/TIGER_IMG.naturalHeight; /* 画幅自动适配 */
   var sc0=Math.min(innerWidth/BOX_W,innerHeight/BOX_H);
-  TDY=(innerHeight-BOX_H*sc0)*0.22/sc0;   /* 文字相对主体带上浮量(世界单位) */
+  TDY=(0.2*innerHeight+(innerHeight-BOX_H*sc0)*0.22)/sc0;   /* 文字相对主体带上浮量(世界单位) */
   var TT=sampleTiger(TIGER_IMG,COLOR_IMG),LT=sampleText(),RO=roseTargets(),i;
   PTS=[];
   for(i=0;i<N_MAIN;i++){
@@ -275,7 +293,7 @@ function assemble(){
     PTS.push({tx:tt.x,ty:tt.y,tz:tt.z,lx:ll.x,ly:ll.y,lz:ll.z,
       th:tt.a,lh:ll.a,
       ox:(Math.random()-0.5)*1.7,oy:(Math.random()-0.5)*1.4,oz:(Math.random()-0.5)*0.8,
-      delay:d,birth:0.5+d*0.9,size:sz0*(tt.edge?1.6:1),shade:tt.a,si:tt.si,edge:tt.edge,g:ll.g||0,
+      delay:d,birth:0.5+d*0.9,size:sz0*(tt.edge?0.8:1),shade:tt.a,si:tt.si,edge:tt.edge,g:ll.g||0,
       tw0:Math.random()*6.28,ts:0.6+Math.random()*1.1});
   }
   for(i=0;i<N_ROSE;i++){
@@ -289,8 +307,9 @@ function assemble(){
 }
 
 /* ====== 状态与交互 ====== */
-var yaw=0,pitch=-0.04,zoom=1,yawVel=0;
+var yaw=0,pitch=-0.04,zoom=1,yawVel=0,YAW_MAX=1.66,hasDragged=false,beckonShown=false;
 var mode='wait',T0=0,dragging=false,lastX=0,lastY=0;
+var CRISP_TIGER=null;
 var elBg=document.querySelector('.bg');
 var elPoem=document.getElementById('poem'),elHint=document.getElementById('hint'),
     elBtn=document.getElementById('openBtn'),elCard=document.getElementById('card'),
@@ -307,9 +326,9 @@ function morphFromYaw(y){return smooth((Math.abs(y)*180/Math.PI-15)/60);}
 function down(x,y){if(mode==='wait')return;mode='free';dragging=true;lastX=x;lastY=y;yawVel=0;}
 function move(x,y){if(!dragging)return;
   var dx=x-lastX,dy=y-lastY;lastX=x;lastY=y;
-  yaw+=dx*0.006;yawVel=dx*0.006;
+  yaw+=dx*0.006;yawVel=dx*0.006;if(yaw>YAW_MAX*1.04){yaw=YAW_MAX*1.04;yawVel=0;}if(yaw<-YAW_MAX*1.04){yaw=-YAW_MAX*1.04;yawVel=0;}
   pitch=Math.max(-0.62,Math.min(0.62,pitch+dy*0.004));}
-function up(){dragging=false;}
+function up(){if(dragging&&Math.abs(yaw)>0.35)hasDragged=true;dragging=false;}
 cv.addEventListener('mousedown',function(e){down(e.clientX,e.clientY);});
 addEventListener('mousemove',function(e){move(e.clientX,e.clientY);});
 addEventListener('mouseup',up);
@@ -326,6 +345,7 @@ cv.addEventListener('touchmove',function(e){if(e.touches.length===2){
 }},{passive:false});
 cv.addEventListener('touchend',function(){pinch0=0;});
 elBtn.addEventListener('click',function(){
+  elBtn.classList.remove('beckon');
   cardOpen=true;elCard.style.display='flex';
   requestAnimationFrame(function(){elPaper.classList.add('show');
     setTimeout(function(){elSeal.classList.add('on');},650);});
@@ -339,13 +359,13 @@ var FWS=[];
 function rr2(x,y,w2,h2,r){ctx.beginPath();ctx.moveTo(x+r,y);
   ctx.arcTo(x+w2,y,x+w2,y+h2,r);ctx.arcTo(x+w2,y+h2,x,y+h2,r);
   ctx.arcTo(x,y+h2,x,y,r);ctx.arcTo(x,y,x+w2,y,r);ctx.closePath();}
-function drawCake(t,now){
+function drawCake(t,now,faceA){
   var w=cv.width,h=cv.height;
   var p=Math.min(1,(t-13.0)/1.4), rise=1-Math.pow(1-p,3);
-  var s=Math.min(w,h)/500;                 /* w,h 已是设备像素，不再乘 DPR */
+  var s=Math.min(w,h)/540;                 /* w,h 已是设备像素，不再乘 DPR */
   var lit=Math.max(0,Math.min(1,(t-14.2)/0.35));
-  var bx=w*0.5, by=h*0.77+(1-rise)*h*0.4+Math.sin(now*0.0022)*3.5*DPR;  /* 中下部分，轻轻浮动 */
-  ctx.globalAlpha=Math.min(1,p*1.6);
+  var bx=w*0.5, by=h*0.78+(1-rise)*h*0.4+Math.sin(now*0.0022)*3.5*DPR;  /* 中下部分，轻轻浮动 */
+  ctx.globalAlpha=Math.min(1,p*1.6)*faceA;
   /* 落地软影 */
   ctx.fillStyle='rgba(8,12,30,0.38)';
   ctx.beginPath();ctx.ellipse(bx,h*0.915,150*s,17*s,0,0,6.3);ctx.fill();
@@ -434,11 +454,12 @@ function frame(now){
   var t=(now-T0)/1000;
   if(mode==='auto'){
     yaw=autoYaw(t);
-    if(t>7.2&&document.body.className.indexOf('night')<0)document.body.className='night';
-    if(t>9.0&&!cardBtnShown){cardBtnShown=true;elBtn.style.display='block';}
   }else{
-    if(!dragging){yaw+=yawVel;yawVel*=0.93;}
+    if(!dragging){yaw+=yawVel;yawVel*=0.86;if(yaw>YAW_MAX){yaw=YAW_MAX;yawVel*=0.4;}if(yaw<-YAW_MAX){yaw=-YAW_MAX;yawVel*=0.4;}var snap=0,snapOn=false;if(Math.abs(yaw)<0.24){snap=0;snapOn=true;}else if(Math.abs(Math.abs(yaw)-1.571)<0.24){snap=(yaw>0?1:-1)*1.571;snapOn=true;}if(snapOn&&Math.abs(yawVel)<0.004)yaw+=(snap-yaw)*0.09;}
   }
+  if(t>7.2&&document.body.className.indexOf('night')<0)document.body.className='night';
+  if(t>9.0&&!cardBtnShown){cardBtnShown=true;elBtn.style.display='block';}
+  if(t>15.6&&!beckonShown){beckonShown=true;elBtn.classList.add('beckon');}
   var m=morphFromYaw(yaw);
   elBg.style.opacity=(1-m).toFixed(3);   /* 展示文字时竹林完全淡化 */
   var w=cv.width,h=cv.height,cx=w/2,cy=h/2,scale=Math.min(w/BOX_W,h/BOX_H)*zoom,
@@ -448,6 +469,21 @@ function frame(now){
     ctx.globalAlpha=0.95;
     ctx.drawImage(GOLD[1],cx+30*DPR-dr,cy-320*DPR*(1-p*p)-dr,dr*2,dr*2);
     ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;}
+  var bob=Math.sin(now*0.0022)*3.5*DPR;
+  var cakeTop=h*0.78-165*(Math.min(w,h)/540);
+  var cVis=smooth((Math.cos(yaw)-0.30)/0.25)*smooth((t-1.5)/1.0);
+  var sVis=smooth((Math.abs(Math.sin(yaw))-0.52)/0.26)*smooth((t-1.5)/1.0);
+  var tw3=Math.min(LZ*scale,0.94*w),th3=tw3*1120/1760,ty3=0;
+  var band=cakeTop-10*DPR-0.055*h;
+  if(th3>band){th3=Math.max(band,40*DPR);tw3=th3*1760/1120;}
+  ty3=0.055*h+(band-th3)/2+bob;
+  if(cVis>0.003&&CRISP_TIGER){
+    var twT=BOX_W*scale*Math.abs(Math.cos(yaw)),thT=BOX_H*scale;
+    ctx.globalAlpha=cVis;
+    if(t>7.2)ctx.filter='brightness(1.32)';
+    ctx.drawImage(CRISP_TIGER,cx-twT/2,cy+OFFY-thT/2+bob*0.4,twT,thT);
+    ctx.filter='none';ctx.globalAlpha=1;
+  }
   var cyw=Math.cos(yaw),syw=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
   var count=0,k,pt;
   for(k=0;k<PTS.length;k++){pt=PTS[k];
@@ -472,35 +508,44 @@ function frame(now){
     var aVal=Math.max(0.05,pt.th+(pt.lh-pt.th)*pt._lx);
     var sz=pt.size*(0.95+pt.shade*0.35)*pt._df*DPR*(skip>1?1.6:1);
     var tw=0.95+0.05*Math.sin(now*0.0012*pt.ts+pt.tw0);
-    ctx.globalAlpha=Math.max(0.22,Math.min(1,(0.55+(1-pt._z)*0.1)*tw));
+    var pSup=pt.rose?0:Math.max(cVis*(1-pt._lx),sVis*pt._lx);
+    ctx.globalAlpha=Math.max(0,Math.min(1,(0.55+(1-pt._z)*0.1)*tw))*(1-pSup);
     var spr=pt.rose?ROSEP[Math.min(2,Math.floor(pt.rli/24))]
         :(pt.g!==undefined&&pt._lx>0.5)?GOLD[pt.g]:NSP[pt.si];
     if(pt.g!==undefined&&pt._lx>0.5){          /* 鎏金投影（立体） */
-      ctx.globalAlpha=Math.max(0.1,ctx.globalAlpha*0.5);
+      ctx.globalAlpha=Math.max(0.1,ctx.globalAlpha*0.5)*(1-pSup);
       ctx.drawImage(GOLDD,pt._sx+2.2*DPR*pt._df-sz*1.5,pt._sy+2.8*DPR*pt._df-sz*1.5,sz*3,sz*3);
-      ctx.globalAlpha=Math.max(0.22,Math.min(1,(0.55+(1-pt._z)*0.1)*tw));
+      ctx.globalAlpha=Math.max(0,Math.min(1,(0.55+(1-pt._z)*0.1)*tw))*(1-pSup);
     }
     ctx.drawImage(spr,pt._sx-sz*1.5,pt._sy-sz*1.5,sz*3,sz*3);
   }
   ctx.globalCompositeOperation='source-over';
   ctx.globalAlpha=1;
   /* ---- 夜幕烟花（卡通二次元：马卡龙五色、星芒+圆点、闪烁渐隐） ---- */
+  if(sVis>0.003){
+    ctx.globalAlpha=sVis;
+    ctx.drawImage(TXT_CV,cx-tw3/2,ty3,tw3,th3);
+    ctx.globalAlpha=1;
+  }
   var FWT=[[10.6,0.28,0.18,[255,182,213]],[11.1,0.68,0.13,[255,216,130]],[11.7,0.48,0.27,[150,222,255]],[12.2,0.22,0.32,[190,255,205]],[12.7,0.66,0.26,[216,180,255]]];
   for(var fi=0;fi<FWT.length;fi++){
     if(t>FWT[fi][0]&&FWS[fi]===undefined){
-      var sp=[],col=FWT[fi][3],N2=92;
+      var sp=[],col=FWT[fi][3],N2=130;
       for(var s3=0;s3<N2;s3++){
-        var ang2=Math.random()*6.283,spd=Math.pow(Math.random(),0.72)*Math.min(w,h)*0.27;
+        var ang2=Math.random()*6.283,spd=Math.pow(Math.random(),0.72)*Math.min(w,h)*0.31;
         sp.push({x:w*FWT[fi][1],y:h*FWT[fi][2],
           vx:Math.cos(ang2)*spd,vy:Math.sin(ang2)*spd,
           star:s3%9===0,c:col,ph:Math.random()*6.283,sz:(0.9+Math.random()*1.5)*DPR});}
       FWS[fi]={sp:sp,t0:t};}
     var FB=FWS[fi];
     if(FB!==undefined){
-      var age=t-FB.t0, travel=Math.min(age,1.0), fall=0.5*h*0.0003*travel*travel;
+      var fAge=t-FB.t0;
+      if(fAge<0.22){var fl0=1-fAge/0.22;ctx.globalAlpha=fl0*0.55;ctx.fillStyle='#FFF4D6';ctx.beginPath();ctx.arc(w*FWT[fi][1],h*FWT[fi][2],(1-fl0)*52*DPR+8*DPR,0,6.3);ctx.fill();ctx.globalAlpha=1;}
+      var age=t-FB.t0; if(age>3.2){continue;}
+        var travel=1-Math.pow(1-Math.min(age,0.9)/0.9,2.2), fall=0.10*h*Math.pow(Math.max(0,age-0.6),1.7);
       for(var s4=0;s4<FB.sp.length;s4++){
         var s5=FB.sp[s4];
-        var al=age<0.3?age/0.3:(age<1.0?1:Math.max(0.55,1-(age-1.2)/2.6));   /* 绽放后定格 */
+        var al=age<0.25?age/0.25:(age<1.1?1:Math.max(0,1-(age-1.1)/1.7));   /* 绽放后定格 */
         al*=0.92+0.08*Math.sin(age*2.6+s5.ph);          /* 缓慢呼吸，无高频闪 */
         var px2=s5.x+s5.vx*travel+Math.sin(age*3+s5.ph)*2*DPR,
             py2=s5.y+s5.vy*travel+fall;
@@ -519,10 +564,10 @@ function frame(now){
           ctx.beginPath();ctx.arc(px2,py2,s5.sz,0,6.3);ctx.fill();}}
       ctx.globalAlpha=1;}}
   /* ---- 生日蛋糕（矢量绘制，捧出+点亮蜡烛） ---- */
-  if(t>13.0)drawCake(t,now);
+  if(t>13.0&&sVis>0.004)drawCake(t,now,sVis);
   var yawDeg=Math.abs(yaw)*180/Math.PI;
   elPoem.style.opacity=(mode==='auto'?(t>3.2&&t<5.4?0.92:(yawDeg<28?0.75:0)):(yawDeg<28?0.75:0));
-  elHint.style.opacity=(cardOpen||(cardBtnShown&&t>9))?0:(mode==='auto'&&t>4.8?0.9:(mode==='free'?0.55:0));
+  elHint.style.opacity=(cardOpen||(hasDragged&&t>9))?0:(t>4.8?0.9:0);
   requestAnimationFrame(frame);
 }
 
@@ -531,6 +576,20 @@ var TIGER_IMG=new Image(),COLOR_IMG=new Image(),N_LOADED=0;
 function startShow(){
   if(++N_LOADED<2)return;
   assemble();
+  try{
+    var CW=TIGER_IMG.naturalWidth,CH=TIGER_IMG.naturalHeight;
+    var cc=document.createElement('canvas');cc.width=CW;cc.height=CH;
+    var g2=cc.getContext('2d',{willReadFrequently:true});
+    g2.drawImage(COLOR_IMG,0,0,CW,CH);
+    var cd2=g2.getImageData(0,0,CW,CH);
+    var mc=document.createElement('canvas');mc.width=CW;mc.height=CH;
+    var mg=mc.getContext('2d');mg.drawImage(TIGER_IMG,0,0);
+    var md2=mg.getImageData(0,0,CW,CH).data;
+    var dd=cd2.data;
+    for(var i2=0;i2<dd.length;i2+=4){dd[i2+3]=md2[i2];}
+    g2.putImageData(cd2,0,0);
+    CRISP_TIGER=cc;
+  }catch(e){CRISP_TIGER=null;}
   resize();
   T0=performance.now()+(location.hash==='#rec'?3000:0);lastT=T0;mode='auto';
   requestAnimationFrame(frame);
