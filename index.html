@@ -50,7 +50,7 @@
     opacity:0;transition:opacity 1.4s;
 }
   #poem .cr{font-size:clamp(9px,1.3vmin,11px);opacity:.5;letter-spacing:.4em;margin-top:2.2vmin}
-  #hint{position:fixed;left:0;right:0;bottom:20px;z-index:4;text-align:center;color:#8a8272;
+  #hint{position:fixed;left:14px;right:132px;bottom:20px;z-index:4;text-align:center;color:#8a8272;
     font-size:13px;letter-spacing:.14em;opacity:0;transition:opacity .9s;pointer-events:none}
   #openBtn{position:fixed;right:18px;bottom:18px;z-index:4;padding:9px 18px;color:#f4efe4;
     background:rgba(58,50,38,.85);border:1px solid #8a7a5c;border-radius:2px;
@@ -92,10 +92,10 @@
   <div class="paper" id="paper">
     <span id="back">折起信纸 ✕</span>
     <h3>致 德昌</h3>
-    <p>同一个农历七月廿八生，同窗四年，又在自动化青协并肩三年，很幸运能在大学生活认识你。新的一岁，愿你跑得稳、爬得高、挥拍照样利落，顺顺当当，开开心心。来日方长，好酒不急，等你下山，我们慢慢喝。</p>
+    <p>同是农历七月廿八生，同窗四年，又在自动化青协并肩三年，很幸运能在大学生活认识你。新的一岁，愿你跑得稳、爬得高、挥拍照样利落，顺顺当当，开开心心。来日方长，好酒不急，等你下山，我们慢慢喝。</p>
     <div class="sign">——阿腾</div>
     <div class="date">丙午年七月廿八 · 2026.09.09</div>
-    <div class="why">为何是虎？过江龙（蟒）恣意，翻云覆雨；凤凰决绝，向死而生；下山虎，威风凛凛，却一步一个脚印——像你：成熟稳健，有耐心，靠谱，有担当。这支虎纹笔，愿你落笔如虎下山；心有猛虎，细嗅蔷薇。</div>
+    <div class="why">为何是虎？过江龙恣意，兴云布雨；凤凰矜贵，非梧不栖；下山虎，威风凛凛，却一步一个脚印——像你：成熟稳健，有耐心，靠谱，有担当。这支虎纹笔，愿你落笔如虎下山；心有猛虎，细嗅蔷薇。</div>
     <div id="seal">虎</div>
   </div>
 </div>
@@ -165,7 +165,7 @@ var GOLDD=hueSprite(41,0.9,24);
 /* 蔷薇三层 sprite：花心深玫红 → 内圈 → 外圈浅粉（取色自真实蔷薇照片） */
 var ROSEP=[hueSprite(349,0.95,34),hueSprite(347,0.95,46),hueSprite(344,0.95,58)];
 /* ====== 清字层：鎏金实体字预渲染（非光粒组字） ====== */
-var TXT_CV=document.createElement('canvas');TXT_CV.width=1760;TXT_CV.height=1120;
+var TXT_CV=document.createElement('canvas');TXT_CV.width=1760;TXT_CV.height=920;
 (function(){var g=TXT_CV.getContext('2d');
   g.textAlign='center';g.textBaseline='middle';
   function gold(x,y,size,txt){
@@ -177,7 +177,6 @@ var TXT_CV=document.createElement('canvas');TXT_CV.width=1760;TXT_CV.height=1120
   gold(880,140,112,'亲 爱 的 德 昌 ：');
   gold(880,452,300,'生 日 快 乐');
   gold(880,764,190,'天 天 开 心');
-  gold(880,972,112,'—— 阿 腾');
 })();
 
 /* ====== 采样 ====== */
@@ -231,7 +230,6 @@ function sampleText(){
     g.font='bold 46px "Yuanti SC","幼圆","YouYuan","PingFang SC","Microsoft YaHei",sans-serif';g.fillText('亲 爱 的 德 昌 ：',W/2,68);
     g.font='bold 148px "Yuanti SC","幼圆","YouYuan","PingFang SC","Microsoft YaHei",sans-serif';g.fillText('生 日 快 乐',W/2,226);
     g.font='bold 94px "Yuanti SC","幼圆","YouYuan","PingFang SC","Microsoft YaHei",sans-serif';g.fillText('天 天 开 心',W/2,382);
-    g.font='bold 52px "Yuanti SC","幼圆","YouYuan","PingFang SC","Microsoft YaHei",sans-serif';g.fillText('——阿腾',W/2,486);
   });
   var d=c.getContext('2d').getImageData(0,0,W,H).data,arr=[],x,y,i;
   for(y=0;y<H;y+=1)for(x=0;x<W;x+=1){i=(y*W+x)*4;
@@ -293,7 +291,7 @@ function assemble(){
     PTS.push({tx:tt.x,ty:tt.y,tz:tt.z,lx:ll.x,ly:ll.y,lz:ll.z,
       th:tt.a,lh:ll.a,
       ox:(Math.random()-0.5)*1.7,oy:(Math.random()-0.5)*1.4,oz:(Math.random()-0.5)*0.8,
-      delay:d,birth:0.5+d*0.9,size:sz0*(tt.edge?0.8:1),shade:tt.a,si:tt.si,edge:tt.edge,g:ll.g||0,
+      delay:d,birth:0.12+d*0.3,size:sz0*(tt.edge?0.8:1),shade:tt.a,si:tt.si,edge:tt.edge,g:ll.g||0,
       tw0:Math.random()*6.28,ts:0.6+Math.random()*1.1});
   }
   for(i=0;i<N_ROSE;i++){
@@ -307,7 +305,7 @@ function assemble(){
 }
 
 /* ====== 状态与交互 ====== */
-var yaw=0,pitch=-0.04,zoom=1,yawVel=0,YAW_MAX=1.66,hasDragged=false,beckonShown=false;
+var yaw=0,pitch=-0.04,zoom=1,yawVel=0,YAW_MAX=1.66,hasDragged=false,beckonShown=false,CONF=[],SPK=null;
 var mode='wait',T0=0,dragging=false,lastX=0,lastY=0;
 var CRISP_TIGER=null;
 var elBg=document.querySelector('.bg');
@@ -359,11 +357,20 @@ var FWS=[];
 function rr2(x,y,w2,h2,r){ctx.beginPath();ctx.moveTo(x+r,y);
   ctx.arcTo(x+w2,y,x+w2,y+h2,r);ctx.arcTo(x+w2,y+h2,x,y+h2,r);
   ctx.arcTo(x,y+h2,x,y,r);ctx.arcTo(x,y,x+w2,y,r);ctx.closePath();}
+function drawSprinkles(bx,by,s){
+  if(!SPK){SPK=[];var cc6=['#F4526B','#7FBF6A','#5AB4D0','#F5A623','#B78FE0','#FF8FA8'];
+    for(var i5=0;i5<36;i5++)SPK.push({u:Math.random()*2-1,v:Math.random(),c:cc6[i5%6],r:Math.random()*3.14,tier:i5%2});}
+  for(var i6=0;i6<SPK.length;i6++){var p5=SPK[i6],sx5,sy5;
+    if(p5.tier===0){sx5=bx+p5.u*60*s;sy5=by-99*s+p5.v*15*s;}
+    else{sx5=bx+p5.u*96*s;sy5=by-31*s+p5.v*17*s;}
+    ctx.save();ctx.translate(sx5,sy5);ctx.rotate(p5.r);ctx.fillStyle=p5.c;
+    ctx.fillRect(-3.1*s,-1.05*s,6.2*s,2.1*s);ctx.restore();}
+}
 function drawCake(t,now,faceA){
   var w=cv.width,h=cv.height;
-  var p=Math.min(1,(t-13.0)/1.4), rise=1-Math.pow(1-p,3);
+  var p=Math.min(1,(t-10.4)/1.4), rise=1-Math.pow(1-p,3);
   var s=Math.min(w,h)/540;                 /* w,h 已是设备像素，不再乘 DPR */
-  var lit=Math.max(0,Math.min(1,(t-14.2)/0.35));
+  var lit=Math.max(0,Math.min(1,(t-11.9)/0.35));
   var bx=w*0.5, by=h*0.78+(1-rise)*h*0.4+Math.sin(now*0.0022)*3.5*DPR;  /* 中下部分，轻轻浮动 */
   ctx.globalAlpha=Math.min(1,p*1.6)*faceA;
   /* 落地软影 */
@@ -405,6 +412,7 @@ function drawCake(t,now,faceA){
     for(var lf=0;lf<3;lf++){var la=-1.57+(lf-1)*0.7;
       ctx.beginPath();ctx.ellipse(sx+Math.cos(la)*sr*0.5,sy-sr*0.85+Math.sin(la)*sr*0.2,sr*0.32,sr*0.16,la,0,6.3);ctx.fill();}
   }
+  drawSprinkles(bx,by,s);
   straw(bx-92*s,by-40*s,11*s);straw(bx+92*s,by-40*s,11*s);
   straw(bx-52*s,by-106*s,9*s);straw(bx+52*s,by-106*s,9*s);
   /* 三根条纹蜡烛 + 火焰 */
@@ -457,7 +465,8 @@ function frame(now){
   }else{
     if(!dragging){yaw+=yawVel;yawVel*=0.86;if(yaw>YAW_MAX){yaw=YAW_MAX;yawVel*=0.4;}if(yaw<-YAW_MAX){yaw=-YAW_MAX;yawVel*=0.4;}var snap=0,snapOn=false;if(Math.abs(yaw)<0.24){snap=0;snapOn=true;}else if(Math.abs(Math.abs(yaw)-1.571)<0.24){snap=(yaw>0?1:-1)*1.571;snapOn=true;}if(snapOn&&Math.abs(yawVel)<0.004)yaw+=(snap-yaw)*0.09;}
   }
-  if(t>7.2&&document.body.className.indexOf('night')<0)document.body.className='night';
+if(Math.abs(yaw)>0.35&&document.body.className.indexOf('night')<0)document.body.className='night';
+  if(Math.abs(yaw)<=0.35&&document.body.className.indexOf('night')>=0)document.body.className='';
   if(t>9.0&&!cardBtnShown){cardBtnShown=true;elBtn.style.display='block';}
   if(t>15.6&&!beckonShown){beckonShown=true;elBtn.classList.add('beckon');}
   var m=morphFromYaw(yaw);
@@ -471,12 +480,12 @@ function frame(now){
     ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;}
   var bob=Math.sin(now*0.0022)*3.5*DPR;
   var cakeTop=h*0.78-165*(Math.min(w,h)/540);
-  var cVis=smooth((Math.cos(yaw)-0.30)/0.25)*smooth((t-1.5)/1.0);
-  var sVis=smooth((Math.abs(Math.sin(yaw))-0.52)/0.26)*smooth((t-1.5)/1.0);
-  var tw3=Math.min(LZ*scale,0.94*w),th3=tw3*1120/1760,ty3=0;
-  var band=cakeTop-10*DPR-0.055*h;
-  if(th3>band){th3=Math.max(band,40*DPR);tw3=th3*1760/1120;}
-  ty3=0.055*h+(band-th3)/2+bob;
+  var cVis=smooth((Math.cos(yaw)-0.30)/0.25)*smooth((t-0.6)/0.5);
+  var sVis=smooth((Math.abs(Math.sin(yaw))-0.52)/0.26)*smooth((t-0.8)/0.5);
+  var tw3=Math.min(LZ*scale,0.94*w),th3=tw3*920/1760,ty3=0;
+  var bandTop=0.045*h,bandBot=cakeTop-14*DPR-0.035*h,band=bandBot-bandTop;
+  if(th3>band){th3=Math.max(band,40*DPR);tw3=th3*1760/920;}
+  ty3=bandBot-th3+bob;
   if(cVis>0.003&&CRISP_TIGER){
     var twT=BOX_W*scale*Math.abs(Math.cos(yaw)),thT=BOX_H*scale;
     ctx.globalAlpha=cVis;
@@ -484,11 +493,15 @@ function frame(now){
     ctx.drawImage(CRISP_TIGER,cx-twT/2,cy+OFFY-thT/2+bob*0.4,twT,thT);
     ctx.filter='none';ctx.globalAlpha=1;
   }
+  if(t>0.5&&t<1.35){var rp=(t-0.5)/0.85;ctx.globalAlpha=(1-rp)*0.7;ctx.strokeStyle='#F2CE72';
+    ctx.lineWidth=(3+6*(1-rp))*DPR;ctx.beginPath();ctx.arc(cx,cy+OFFY,(0.08+0.5*rp)*Math.min(w,h),0,6.3);ctx.stroke();ctx.globalAlpha=1;}
+  if(t>0.68&&t<1.53){var rp2=(t-0.68)/0.85;ctx.globalAlpha=(1-rp2)*0.5;ctx.strokeStyle='#E8B84B';
+    ctx.lineWidth=(2+4*(1-rp2))*DPR;ctx.beginPath();ctx.arc(cx,cy+OFFY,(0.05+0.42*rp2)*Math.min(w,h),0,6.3);ctx.stroke();ctx.globalAlpha=1;}
   var cyw=Math.cos(yaw),syw=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
   var count=0,k,pt;
   for(k=0;k<PTS.length;k++){pt=PTS[k];
     if(t<=pt.birth)continue;
-    var ph=Math.min(1,(t-pt.birth)/0.7);
+    var ph=Math.min(1,(t-pt.birth)/0.55);
     var lxp=smooth(Math.max(0,Math.min(1,m*1.3-pt.delay*0.3)));
     var bx=pt.tx+(pt.lx-pt.tx)*lxp, by=pt.ty+(pt.ly-pt.ty)*lxp, bz=pt.tz+(pt.lz-pt.tz)*lxp;
     if(ph<1){bx+=pt.ox*(1-ph);by+=pt.oy*(1-ph);bz+=pt.oz*(1-ph);}
@@ -511,7 +524,7 @@ function frame(now){
     var pSup=pt.rose?0:Math.max(cVis*(1-pt._lx),sVis*pt._lx);
     ctx.globalAlpha=Math.max(0,Math.min(1,(0.55+(1-pt._z)*0.1)*tw))*(1-pSup);
     var spr=pt.rose?ROSEP[Math.min(2,Math.floor(pt.rli/24))]
-        :(pt.g!==undefined&&pt._lx>0.5)?GOLD[pt.g]:NSP[pt.si];
+        :(t<1.15)?(pt.edge?GOLD[0]:GOLD[2]):(pt.g!==undefined&&pt._lx>0.5)?GOLD[pt.g]:NSP[pt.si];
     if(pt.g!==undefined&&pt._lx>0.5){          /* 鎏金投影（立体） */
       ctx.globalAlpha=Math.max(0.1,ctx.globalAlpha*0.5)*(1-pSup);
       ctx.drawImage(GOLDD,pt._sx+2.2*DPR*pt._df-sz*1.5,pt._sy+2.8*DPR*pt._df-sz*1.5,sz*3,sz*3);
@@ -529,7 +542,7 @@ function frame(now){
   }
   var FWT=[[10.6,0.28,0.18,[255,182,213]],[11.1,0.68,0.13,[255,216,130]],[11.7,0.48,0.27,[150,222,255]],[12.2,0.22,0.32,[190,255,205]],[12.7,0.66,0.26,[216,180,255]]];
   for(var fi=0;fi<FWT.length;fi++){
-    if(t>FWT[fi][0]&&FWS[fi]===undefined){
+    if(t>FWT[fi][0]&&sVis>0.25&&FWS[fi]===undefined){
       var sp=[],col=FWT[fi][3],N2=130;
       for(var s3=0;s3<N2;s3++){
         var ang2=Math.random()*6.283,spd=Math.pow(Math.random(),0.72)*Math.min(w,h)*0.31;
@@ -564,10 +577,22 @@ function frame(now){
           ctx.beginPath();ctx.arc(px2,py2,s5.sz,0,6.3);ctx.fill();}}
       ctx.globalAlpha=1;}}
   /* ---- 生日蛋糕（矢量绘制，捧出+点亮蜡烛） ---- */
-  if(t>13.0&&sVis>0.004)drawCake(t,now,sVis);
+    if(sVis>0.25&&t>10.8&&t<14.0&&CONF.length<90){
+    var cc7=['#F9AFC6','#F9D98B','#9AD6F5','#B9E8B9','#CDB4EC'];
+    for(var sn=0;sn<2;sn++)CONF.push({x:(0.10+Math.random()*0.80)*w,y:-24*DPR,
+      vy:(0.055+Math.random()*0.075)*h,sw:(14+Math.random()*22)*DPR,
+      ph:Math.random()*6.28,rs:(Math.random()*2-1)*2.4,rot:Math.random()*3.14,
+      s2:(2.6+Math.random()*2.8)*DPR,c:cc7[(Math.random()*5)|0],
+      ly:cakeTop+(0.18+Math.random()*0.72)*(h*0.93-cakeTop)});}
+  for(var ci=0;ci<CONF.length;ci++){var cf=CONF[ci];
+    if(cf.y<cf.ly){cf.y+=cf.vy*dt/1000;cf.rot+=cf.rs*dt/1000;}
+    ctx.save();ctx.translate(cf.x+Math.sin(now*0.0012+cf.ph)*cf.sw,Math.min(cf.y,cf.ly));
+    ctx.rotate(cf.rot);ctx.globalAlpha=0.92;ctx.fillStyle=cf.c;
+    ctx.fillRect(-cf.s2,-cf.s2*0.42,cf.s2*2,cf.s2*0.84);ctx.restore();}
+  if(t>10.4&&sVis>0.004)drawCake(t,now,sVis);
   var yawDeg=Math.abs(yaw)*180/Math.PI;
-  elPoem.style.opacity=(mode==='auto'?(t>3.2&&t<5.4?0.92:(yawDeg<28?0.75:0)):(yawDeg<28?0.75:0));
-  elHint.style.opacity=(cardOpen||(hasDragged&&t>9))?0:(t>4.8?0.9:0);
+  elPoem.style.opacity=(mode==='auto'?(t>1.3&&t<3.9?0.92:(yawDeg<28?0.75:0)):(yawDeg<28?0.75:0));
+  elHint.style.opacity=(cardOpen||t>9)?0:(t>4.8?0.9:0);
   requestAnimationFrame(frame);
 }
 
