@@ -308,7 +308,7 @@ function assemble(){
 }
 
 /* ====== 状态与交互 ====== */
-var yaw=0,pitch=-0.04,zoom=1,yawVel=0,YAW_MAX=1.66,hasDragged=false,beckonShown=false,CONF=[],SPK=null,_po=-1,_hi=-1;
+var yaw=0,pitch=-0.04,zoom=1,yawVel=0,YAW_MAX=1.66,hasDragged=false,beckonShown=false,CONF=[],SPK=null,_po=-1,_hi=-1,nightAt=-1;
 var mode='wait',T0=0,dragging=false,lastX=0,lastY=0;
 var CRISP_TIGER=null;
 var elBg=document.querySelector('.bg');
@@ -369,9 +369,9 @@ function drawSprinkles(bx,by,s){
     ctx.save();ctx.translate(sx5,sy5);ctx.rotate(p5.r);ctx.fillStyle=p5.c;
     ctx.fillRect(-3.1*s,-1.05*s,6.2*s,2.1*s);ctx.restore();}
 }
-function drawCake(t,now,faceA){
+function drawCake(t,now,faceA,ct){
   var w=cv.width,h=cv.height;
-  var p=Math.min(1,(t-10.4)/1.4), rise=1-Math.pow(1-p,3);
+  var p=Math.min(1,Math.max(0,(ct-0.2))/1.4), rise=1-Math.pow(1-p,3);
   var s=Math.min(w,h)/540;
   var portrait=h>w*1.15;
   var by=(portrait?h*0.82:h*0.78+60*s)+(1-rise)*h*0.4+Math.sin(now*0.0022)*3.5*DPR;
@@ -399,8 +399,10 @@ function frame(now){
   }
 if(Math.abs(yaw)>Math.PI/4&&document.body.className.indexOf('night')<0)document.body.className='night';
   if(Math.abs(yaw)<=Math.PI/4&&document.body.className.indexOf('night')>=0)document.body.className='';
+  if(document.body.className.indexOf('night')>=0&&nightAt<0)nightAt=t;
+  var ct=(nightAt<0)?-1:t-nightAt;
   if(t>9.0&&!cardBtnShown){cardBtnShown=true;elBtn.style.display='block';}
-  if(t>15.6&&!beckonShown){beckonShown=true;elBtn.classList.add('beckon');}
+  if(((nightAt>=0&&ct>5.2)||t>15.6)&&!beckonShown){beckonShown=true;elBtn.classList.add('beckon');}
   var m=morphFromYaw(yaw);
   elBg.style.opacity=(1-m).toFixed(3);   /* 展示文字时竹林完全淡化 */
   var w=cv.width,h=cv.height,cx=w/2,cy=h/2,scale=Math.min(w/BOX_W,h/BOX_H)*zoom,
@@ -473,9 +475,9 @@ if(Math.abs(yaw)>Math.PI/4&&document.body.className.indexOf('night')<0)document.
     ctx.drawImage(TXT_CV,cx-tw3/2,ty3,tw3,th3);
     ctx.globalAlpha=1;
   }
-  var FWT=[[10.6,0.28,0.18,[255,182,213]],[11.1,0.68,0.13,[255,216,130]],[11.7,0.48,0.27,[150,222,255]],[12.2,0.22,0.32,[190,255,205]],[12.7,0.66,0.26,[216,180,255]]];
+  var FWT=[[0.2,0.28,0.18,[255,182,213]],[0.7,0.68,0.13,[255,216,130]],[1.1,0.48,0.27,[150,222,255]],[1.6,0.22,0.32,[190,255,205]],[2.1,0.66,0.26,[216,180,255]]];
   for(var fi=0;fi<FWT.length;fi++){
-    if(t>FWT[fi][0]&&sVis>0.25&&FWS[fi]===undefined){
+    if(nightAt>=0&&ct>FWT[fi][0]&&sVis>0.25&&FWS[fi]===undefined){
       var sp=[],col=FWT[fi][3],N2=130;
       for(var s3=0;s3<N2;s3++){
         var ang2=Math.random()*6.283,spd=Math.pow(Math.random(),0.72)*Math.min(w,h)*0.31;
@@ -510,7 +512,7 @@ if(Math.abs(yaw)>Math.PI/4&&document.body.className.indexOf('night')<0)document.
           ctx.beginPath();ctx.arc(px2,py2,s5.sz,0,6.3);ctx.fill();}}
       ctx.globalAlpha=1;}}
   /* ---- 生日蛋糕（矢量绘制，捧出+点亮蜡烛） ---- */
-    if(sVis>0.25&&t>10.8&&t<14.0&&CONF.length<90){
+    if(nightAt>=0&&sVis>0.25&&ct>0.4&&ct<3.4&&CONF.length<90){
     var cc7=['#F9AFC6','#F9D98B','#9AD6F5','#B9E8B9','#CDB4EC'];
     for(var sn=0;sn<2;sn++)CONF.push({x:(0.10+Math.random()*0.80)*w,y:-24*DPR,
       vy:(0.055+Math.random()*0.075)*h,sw:(14+Math.random()*22)*DPR,
@@ -523,11 +525,11 @@ if(Math.abs(yaw)>Math.PI/4&&document.body.className.indexOf('night')<0)document.
     ctx.rotate(cf.rot);ctx.globalAlpha=0.92*sVis;ctx.fillStyle=cf.c;
     ctx.fillRect(-cf.s2,-cf.s2*0.42,cf.s2*2,cf.s2*0.84);ctx.restore();}
   if(sVis<0.02&&CONF.length)CONF.length=0;
-  if(t>10.4&&sVis>0.004)drawCake(t,now,sVis);
+  if(nightAt>=0&&sVis>0.004)drawCake(t,now,sVis,ct);
   var yawDeg=Math.abs(yaw)*180/Math.PI;
   var po=(mode==='auto'?(t>1.3&&t<3.9?0.92:(yawDeg<28?0.75:0)):(yawDeg<28?0.75:0));
   if(po!==_po){elPoem.style.opacity=po;_po=po;}
-  var hi=(cardOpen||t>9)?0:(t>4.8?0.9:0);
+  var hi=(cardOpen||t>9)?0:(t>1.3?0.9:0);
   if(hi!==_hi){elHint.style.opacity=hi;_hi=hi;}
   requestAnimationFrame(frame);
 }
