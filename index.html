@@ -24,14 +24,14 @@
     background:radial-gradient(circle at 42% 38%,#C8402E,#B93726 62%,#A93122);
     box-shadow:0 0 0 3px rgba(169,49,34,.14)}
   .bg{position:fixed;left:0;top:0;width:72%;height:67%;z-index:0;pointer-events:none;
-    -webkit-mask-image:linear-gradient(180deg,#000 46%,rgba(0,0,0,0) 97%);
-    mask-image:linear-gradient(180deg,#000 46%,rgba(0,0,0,0) 97%);
+    -webkit-mask-image:linear-gradient(180deg,#000 38%,rgba(0,0,0,0) 94%);
+    mask-image:linear-gradient(180deg,#000 38%,rgba(0,0,0,0) 94%);
     transition:opacity .25s linear}
   .bgimg{position:absolute;inset:0;
     background-position:left top;background-size:cover;background-repeat:no-repeat;
     filter:blur(1.1px);
-    -webkit-mask-image:linear-gradient(90deg,#000 70%,rgba(0,0,0,0) 99%);
-    mask-image:linear-gradient(90deg,#000 70%,rgba(0,0,0,0) 99%);
+    -webkit-mask-image:linear-gradient(90deg,#000 56%,rgba(0,0,0,0) 97%);
+    mask-image:linear-gradient(90deg,#000 56%,rgba(0,0,0,0) 97%);
     box-shadow:inset 0 0 0 9999px rgba(244,237,220,.24)}
   .nightveil{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;
     transition:opacity 2.6s ease;
@@ -190,7 +190,7 @@ function sampleTiger(img,cimg){
       var wgt=(edge?110:40)+a*a*130;
       if(!edge&&x/W>0.57&&y/H>0.68)wgt*=1.8;   /* 虎首加密（嗅的焦点） */
       var R=cd[j],G2=cd[j+1],B=cd[j+2];
-      if(edge){R*=0.32;G2*=0.32;B*=0.32;}       /* 轮廓带：原色压暗成勾线 */
+      if(edge){R*=0.2;G2*=0.2;B*=0.2;}       /* 轮廓带：原色压暗成勾线 */
       arr.push({x:x,y:y,w:wgt,a:edge?Math.min(1,a*1.3):a,si:nearestIdx(R,G2,B),
                 edge:edge});tot+=wgt;}}
   var pre=new Float64Array(arr.length+1);
@@ -275,7 +275,7 @@ function assemble(){
     PTS.push({tx:tt.x,ty:tt.y,tz:tt.z,lx:ll.x,ly:ll.y,lz:ll.z,
       th:tt.a,lh:ll.a,
       ox:(Math.random()-0.5)*1.7,oy:(Math.random()-0.5)*1.4,oz:(Math.random()-0.5)*0.8,
-      delay:d,birth:0.5+d*0.9,size:sz0*(tt.edge?1.45:1),shade:tt.a,si:tt.si,edge:tt.edge,g:ll.g||0,
+      delay:d,birth:0.5+d*0.9,size:sz0*(tt.edge?1.6:1),shade:tt.a,si:tt.si,edge:tt.edge,g:ll.g||0,
       tw0:Math.random()*6.28,ts:0.6+Math.random()*1.1});
   }
   for(i=0;i<N_ROSE;i++){
@@ -500,8 +500,8 @@ function frame(now){
       var age=t-FB.t0, travel=Math.min(age,1.0), fall=0.5*h*0.0003*travel*travel;
       for(var s4=0;s4<FB.sp.length;s4++){
         var s5=FB.sp[s4];
-        var al=age<0.3?age/0.3:(age<1.0?1:Math.max(0,1-(age-1.0)/1.5));
-        al*=0.82+0.18*Math.sin(age*9+s5.ph);          /* 二次元高频闪烁 */
+        var al=age<0.3?age/0.3:(age<1.0?1:Math.max(0.55,1-(age-1.2)/2.6));   /* 绽放后定格 */
+        al*=0.92+0.08*Math.sin(age*2.6+s5.ph);          /* 缓慢呼吸，无高频闪 */
         var px2=s5.x+s5.vx*travel+Math.sin(age*3+s5.ph)*2*DPR,
             py2=s5.y+s5.vy*travel+fall;
         ctx.globalAlpha=Math.max(0,al*0.95);
